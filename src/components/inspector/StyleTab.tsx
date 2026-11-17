@@ -1,15 +1,23 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Shuffle } from 'lucide-react';
 import type {
   AvatarShapeId,
   BorderStyleId,
+  CardStyleCategory,
   CardThemeId,
   FontFamilyId,
   ShadowStyleId,
   StudioConfig,
   TextAlignId
 } from '../../types';
-import { CARD_STYLE_IDS, DECORATION_IDS, LAYOUT_MODE_IDS } from '../../constants/presets';
+import {
+  AESTHETIC_CARD_STYLE_IDS,
+  CARD_STYLE_IDS,
+  DECORATION_IDS,
+  LAYOUT_MODE_IDS,
+  SOCIAL_CARD_STYLE_IDS
+} from '../../constants/presets';
 import { useI18n } from '../../hooks/useI18n';
 
 interface StyleTabProps {
@@ -26,6 +34,14 @@ export function StyleTab({
   onClearIndividualTilts
 }: StyleTabProps) {
   const { t } = useI18n();
+  const [styleCategory, setStyleCategory] = useState<CardStyleCategory>('all');
+
+  const visibleStyles =
+    styleCategory === 'social'
+      ? SOCIAL_CARD_STYLE_IDS
+      : styleCategory === 'aesthetic'
+      ? AESTHETIC_CARD_STYLE_IDS
+      : CARD_STYLE_IDS;
 
   const palettes: { id: CardThemeId; swatch: string }[] = [
     { id: 'light', swatch: 'bg-white border-slate-200' },
@@ -43,18 +59,39 @@ export function StyleTab({
       transition={{ duration: 0.16 }}
       className="divide-y divide-slate-200 dark:divide-slate-800"
     >
-      {/* 12 Card Styles */}
+      {/* Card Styles with Minimalist Category Pills */}
       <section className="p-4 sm:p-5 space-y-2.5">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            {t('style.cardStylesTitle')}
+            {t('style.cardStylesTitle')} ({visibleStyles.length})
           </h2>
-          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 truncate">
             {t(`style.cardStyles.${config.cardStyle}.name`)}
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-1.5 max-h-[235px] overflow-y-auto pr-0.5">
-          {CARD_STYLE_IDS.map((id) => {
+
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-[#0E1014]">
+          {(['all', 'social', 'aesthetic'] as CardStyleCategory[]).map((cat) => {
+            const active = styleCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setStyleCategory(cat)}
+                className={`flex-1 h-7 rounded-md text-[11px] transition-all ${
+                  active
+                    ? 'bg-white dark:bg-[#1E222B] text-slate-900 dark:text-white font-semibold shadow-2xs'
+                    : 'text-slate-500 dark:text-slate-400 font-medium hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                {t(`style.categories.${cat}`)}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-2 gap-1.5 max-h-[250px] overflow-y-auto pr-0.5">
+          {visibleStyles.map((id) => {
             const active = config.cardStyle === id;
             return (
               <button
@@ -140,7 +177,7 @@ export function StyleTab({
                   key={id}
                   type="button"
                   onClick={() => onUpdateConfig('decoration', id)}
-                  className={`h-8 px-2 rounded-lg border text-[11px] font-medium transition-all ${
+                  className={`h-8 px-1.5 rounded-lg border text-[11px] font-medium truncate transition-all ${
                     active
                       ? 'border-blue-600 bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold'
                       : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60'
@@ -419,7 +456,10 @@ export function StyleTab({
               onChange={(e) => onUpdateConfig('fontFamily', e.target.value as FontFamilyId)}
               className="w-full h-9 px-2.5 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
             >
+              <option value="inter">{t('style.fontInter')}</option>
               <option value="sans">{t('style.fontSans')}</option>
+              <option value="dm-sans">{t('style.fontDmSans')}</option>
+              <option value="lora">{t('style.fontLora')}</option>
               <option value="serif">{t('style.fontSerif')}</option>
               <option value="mono">{t('style.fontMono')}</option>
             </select>

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Copy, Download } from 'lucide-react';
 import type { StudioConfig } from '../../types';
+import { EXPORT_BG_TEXTURE_IDS } from '../../constants/presets';
 import { useI18n } from '../../hooks/useI18n';
 
 interface ExportTabProps {
@@ -29,7 +30,7 @@ export function ExportTab({
       transition={{ duration: 0.16 }}
       className="divide-y divide-slate-200 dark:divide-slate-800"
     >
-      <section className="p-4 sm:p-5 space-y-3">
+      <section className="p-4 sm:p-5 space-y-3.5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold">{t('export.alphaTitle')}</h2>
@@ -46,18 +47,55 @@ export function ExportTab({
         </div>
 
         {!config.transparentExport && (
-          <div className="pt-2 flex items-center justify-between">
-            <span className="text-xs font-medium">{t('export.solidBgColor')}</span>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={config.solidBgColor}
-                onChange={(e) => onUpdateConfig('solidBgColor', e.target.value)}
-                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
-              />
-              <span className="tabular-nums text-xs text-slate-500">
-                {config.solidBgColor.toUpperCase()}
-              </span>
+          <div className="pt-2 space-y-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium">{t('export.solidBgColor')}</span>
+              <div className="flex items-center gap-1.5">
+                {['#F4F5F7', '#FAF6EE', '#0F1117', '#E0E7FF'].map((col) => (
+                  <button
+                    key={col}
+                    type="button"
+                    onClick={() => onUpdateConfig('solidBgColor', col)}
+                    className={`w-5 h-5 rounded-full border ${
+                      config.solidBgColor.toUpperCase() === col
+                        ? 'ring-2 ring-offset-1 ring-blue-500 border-white'
+                        : 'border-black/15'
+                    }`}
+                    style={{ backgroundColor: col }}
+                  />
+                ))}
+                <input
+                  type="color"
+                  value={config.solidBgColor}
+                  onChange={(e) => onUpdateConfig('solidBgColor', e.target.value)}
+                  className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium mb-1.5">
+                {t('export.textureLabel')}
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {EXPORT_BG_TEXTURE_IDS.map((tex) => {
+                  const active = (config.exportBgTexture || 'solid') === tex;
+                  return (
+                    <button
+                      key={tex}
+                      type="button"
+                      onClick={() => onUpdateConfig('exportBgTexture', tex)}
+                      className={`h-8 px-2 rounded-lg border text-[11px] font-medium truncate transition-all ${
+                        active
+                          ? 'border-blue-600 bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold'
+                          : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60'
+                      }`}
+                    >
+                      {t(`export.textures.${tex}`)}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}

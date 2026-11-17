@@ -1,3 +1,4 @@
+import { toPng, toBlob } from 'html-to-image';
 import type { CommentItem, StudioConfig } from '../types';
 import { parseRichSegments } from './richText';
 import { getEffectiveTilt, getSurfaceTokens } from './surfaceTokens';
@@ -598,136 +599,67 @@ export async function renderArtboardToPngDataUrl(
   return out.toDataURL('image/png');
 }
 
-function rasterizeSvgDataUrlToPng(
-  svgDataUrl: string,
-  fallbackW = 800,
-  fallbackH = 450
-): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const w = img.naturalWidth || fallbackW;
-      const h = img.naturalHeight || fallbackH;
-      const c = document.createElement('canvas');
-      c.width = w;
-      c.height = h;
-      const ctx = c.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, w, h);
-      try {
-        resolve(c.toDataURL('image/png'));
-      } catch {
-        resolve(svgDataUrl);
-      }
-    };
-    img.onerror = () => resolve(svgDataUrl);
-    img.src = svgDataUrl;
-  });
-}
-
 export async function captureLiveDomToPngDataUrl(
   sourceNode: HTMLElement | null,
-  zoom: number,
+  _zoom: number,
   config: StudioConfig,
   comments: CommentItem[],
   labels: CanvasExportLabels
 ): Promise<string> {
   if (!sourceNode) return renderArtboardToPngDataUrl(config, comments, labels);
 
-  const rect = sourceNode.getBoundingClientRect();
-  const currentZoom = zoom || 1;
-  const width = Math.ceil(rect.width / currentZoom);
-  const height = Math.ceil(rect.height / currentZoom);
+  const width = sourceNode.offsetWidth;
+  const height = sourceNode.offsetHeight;
   if (width <= 0 || height <= 0) return renderArtboardToPngDataUrl(config, comments, labels);
 
-  const clone = sourceNode.cloneNode(true) as HTMLElement;
-  clone.style.margin = '0';
-  clone.style.transform = 'none';
-  clone.style.width = `${width}px`;
-  clone.style.height = `${height}px`;
-  clone.style.boxSizing = 'border-box';
-
-  const sourceElements = [sourceNode, ...Array.from(sourceNode.querySelectorAll('*'))];
-  const cloneElements = [clone, ...Array.from(clone.querySelectorAll('*'))];
-
-  sourceElements.forEach((srcEl, idx) => {
-    const dstEl = cloneElements[idx] as HTMLElement | undefined;
-    if (!dstEl || !(srcEl instanceof HTMLElement)) return;
-    const computed = window.getComputedStyle(srcEl);
-    let cssText = '';
-    for (let i = 0; i < computed.length; i++) {
-      const prop = computed[i];
-      if (prop.startsWith('transition') || prop.startsWith('animation')) continue;
-      cssText += `${prop}:${computed.getPropertyValue(prop)};`;
-    }
-    dstEl.style.cssText = cssText;
-    if (dstEl === clone) {
-      dstEl.style.margin = '0';
-      dstEl.style.width = `${width}px`;
-      dstEl.style.height = `${height}px`;
-    }
-  });
-
-  const cloneImgs = Array.from(clone.querySelectorAll('img'));
-  await Promise.all(
-    cloneImgs.map(async (imgEl) => {
-      const src = imgEl.getAttribute('src') || '';
-      if (src.startsWith('data:image/svg+xml')) {
-        const pngUrl = await rasterizeSvgDataUrlToPng(src);
-        imgEl.setAttribute('src', pngUrl);
-      }
-    })
-  );
-
-  let fontCss = '';
-  for (const sheet of Array.from(document.styleSheets)) {
-    try {
-      const rules = sheet.cssRules;
-      if (!rules) continue;
-      for (const rule of Array.from(rules)) {
-        if (rule.cssText && rule.cssText.includes('@font-face')) {
-          fontCss += `${rule.cssText}\n`;
-        }
-      }
-    } catch {
-      // Ignore cross-origin stylesheet restrictions
-    }
+  // Ensure all web fonts are loaded before snapshot
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
   }
 
-  const serializedHtml = new XMLSerializer().serializeToString(clone);
-  const svgMarkup = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-      <style>
-        ${fontCss}
-        * { box-sizing: border-box; }
-      </style>
-      <foreignObject x="0" y="0" width="100%" height="100%">
-        ${serializedHtml}
-      </foreignObject>
-    </svg>
-  `;
-
-  const svgBlobUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup)}`;
-  const dpr = config.exportScale || 2;
-
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
-        const ctx = canvas.getContext('2d')!;
-        ctx.scale(dpr, dpr);
-        ctx.drawImage(img, 0, 0, width, height);
-        const pngDataUrl = canvas.toDataURL('image/png');
-        resolve(pngDataUrl);
-      } catch (err) {
-        reject(err);
-      }
-    };
-    img.onerror = (err) => reject(err);
-    img.src = svgBlobUrl;
+  return toPng(sourceNode, {
+    width,
+    height,
+    pixelRatio: config.exportScale || 2,
+    cacheBust: false,
+    skipAutoScale: true,
+    backgroundColor: config.transparentExport ? undefined : config.solidBgColor,
+    style: {
+      margin: '0',
+      transform: 'none'
+    }
   });
+}
+
+export async function captureLiveDomToPngBlob(
+  sourceNode: HTMLElement | null,
+  zoom: number,
+  config: StudioConfig,
+  comments: CommentItem[],
+  labels: CanvasExportLabels
+): Promise<Blob> {
+  if (sourceNode && sourceNode.offsetWidth > 0 && sourceNode.offsetHeight > 0) {
+    if (document.fonts?.ready) {
+      await document.fonts.ready;
+    }
+    const blob = await toBlob(sourceNode, {
+      width: sourceNode.offsetWidth,
+      height: sourceNode.offsetHeight,
+      pixelRatio: config.exportScale || 2,
+      cacheBust: false,
+      skipAutoScale: true,
+      backgroundColor: config.transparentExport ? undefined : config.solidBgColor,
+      style: {
+        margin: '0',
+        transform: 'none'
+      }
+    });
+    if (blob) return blob;
+  }
+
+  const dataUrl = await captureLiveDomToPngDataUrl(sourceNode, zoom, config, comments, labels);
+  const res = await fetch(dataUrl);
+  return res.blob();
 }
 
 export function triggerDownload(dataUrl: string, cardStyle: string) {

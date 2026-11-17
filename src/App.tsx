@@ -10,6 +10,7 @@ import type {
 } from './types';
 import { AVATAR_COLORS, getDefaultData, getPresetByKey, STORAGE_KEY } from './constants/presets';
 import {
+  captureLiveDomToPngBlob,
   captureLiveDomToPngDataUrl,
   renderArtboardToPngDataUrl,
   triggerDownload,
@@ -380,7 +381,7 @@ export default function App() {
   const handleExportPng = async (action: 'download' | 'copy' = 'download') => {
     const labels: CanvasExportLabels = {
       replyAction: t('preview.replyAction'),
-      pinnedByCreator: t('preview.pinnedByCreator'),
+      pinnedByCreator: t('preview.pinnedByCreator', { name: comments[0]?.name || 'Creator' }),
       askMeAnything: t('preview.askMeAnything'),
       brutalistTag: t('preview.brutalistTag'),
       podcastTag: t('preview.podcastTag'),
@@ -390,6 +391,26 @@ export default function App() {
 
     try {
       showToast(t('toasts.renderingPng'));
+
+      if (action === 'copy') {
+        try {
+          if (navigator.clipboard && window.ClipboardItem) {
+            const blobPromise = captureLiveDomToPngBlob(
+              captureTargetRef.current,
+              zoom,
+              config,
+              comments,
+              labels
+            );
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })]);
+            showToast(t('toasts.copiedPng'));
+            return;
+          }
+        } catch {
+          // Fallback to download if clipboard is blocked
+        }
+      }
+
       let dataUrl: string;
       try {
         dataUrl = await captureLiveDomToPngDataUrl(
@@ -403,24 +424,8 @@ export default function App() {
         dataUrl = await renderArtboardToPngDataUrl(config, comments, labels);
       }
 
-      if (action === 'copy') {
-        try {
-          const res = await fetch(dataUrl);
-          const blob = await res.blob();
-          if (navigator.clipboard && window.ClipboardItem) {
-            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-            showToast(t('toasts.copiedPng'));
-            return;
-          }
-        } catch {
-          // Fallback to download
-        }
-        triggerDownload(dataUrl, config.cardStyle);
-        showToast(t('toasts.clipboardFallback'));
-      } else {
-        triggerDownload(dataUrl, config.cardStyle);
-        showToast(t('toasts.downloadedPng'));
-      }
+      triggerDownload(dataUrl, config.cardStyle);
+      showToast(action === 'copy' ? t('toasts.clipboardFallback') : t('toasts.downloadedPng'));
     } catch {
       showToast(t('toasts.exportFailed'));
     }

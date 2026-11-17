@@ -1,13 +1,15 @@
 import type {
   CardStyleId,
   DecorationId,
+  ExportBgTextureId,
+  FontFamilyId,
   LayoutModeId,
   StudioConfig,
   StudioData,
   CommentItem
 } from '../types';
 
-export const STORAGE_KEY = 'klipkomen_studio_react_v3';
+export const STORAGE_KEY = 'klipkomen_studio_react_v4';
 
 export const AVATAR_COLORS = [
   '#2563EB',
@@ -48,24 +50,63 @@ export const SAMPLE_ATTACHMENT_SVG =
     '</svg>'
   );
 
-export const CARD_STYLE_IDS: CardStyleId[] = [
+export const SOCIAL_CARD_STYLE_IDS: CardStyleId[] = [
   'tiktok',
   'threads',
   'youtube',
   'social-x',
   'ig-story',
+  'instagram-comment',
+  'whatsapp'
+];
+
+export const AESTHETIC_CARD_STYLE_IDS: CardStyleId[] = [
   'chat-bubble',
   'editorial',
   'news-quote',
   'podcast-clip',
   'brutalist',
   'lower-third',
-  'frosted'
+  'frosted',
+  'polaroid-note',
+  'retro-window'
+];
+
+export const CARD_STYLE_IDS: CardStyleId[] = [
+  ...SOCIAL_CARD_STYLE_IDS,
+  ...AESTHETIC_CARD_STYLE_IDS
 ];
 
 export const LAYOUT_MODE_IDS: LayoutModeId[] = ['stack', 'thread', 'zigzag', 'collage'];
 
-export const DECORATION_IDS: DecorationId[] = ['none', 'tape', 'pin', 'gloss'];
+export const DECORATION_IDS: DecorationId[] = [
+  'none',
+  'tape',
+  'tape-corners',
+  'pin',
+  'paperclip',
+  'sparkle',
+  'gloss',
+  'stamp'
+];
+
+export const FONT_FAMILY_IDS: FontFamilyId[] = [
+  'sans',
+  'inter',
+  'dm-sans',
+  'serif',
+  'lora',
+  'mono'
+];
+
+export const EXPORT_BG_TEXTURE_IDS: ExportBgTextureId[] = [
+  'solid',
+  'dots',
+  'grid',
+  'paper',
+  'gradient',
+  'mesh'
+];
 
 export const getDefaultData = (): StudioData => ({
   config: {
@@ -78,7 +119,7 @@ export const getDefaultData = (): StudioData => ({
     cardPadding: 16,
     gap: 14,
     fontScale: 100,
-    fontFamily: 'sans',
+    fontFamily: 'inter',
     borderStyle: 'thin',
     shadow: 'soft',
     textAlign: 'left',
@@ -96,6 +137,7 @@ export const getDefaultData = (): StudioData => ({
     showReplyTag: true,
     transparentExport: true,
     solidBgColor: '#F4F5F7',
+    exportBgTexture: 'dots',
     exportScale: 2,
     exportPadding: 28
   },
@@ -148,7 +190,7 @@ export function getPresetByKey(
         borderRadius: 18,
         shadow: 'soft',
         borderStyle: 'none',
-        fontFamily: 'sans',
+        fontFamily: 'inter',
         tiltAngle: -1.5,
         decoration: 'none',
         stackDepth: 0
@@ -180,7 +222,7 @@ export function getPresetByKey(
         borderRadius: 16,
         shadow: 'soft',
         borderStyle: 'thin',
-        fontFamily: 'sans',
+        fontFamily: 'inter',
         tiltAngle: 0,
         decoration: 'none',
         stackDepth: 0
@@ -222,13 +264,13 @@ export function getPresetByKey(
     },
     'aesthetic-sticker': {
       cfg: {
-        cardStyle: 'brutalist',
+        cardStyle: 'polaroid-note',
         layoutMode: 'stack',
         cardTheme: 'warm',
         borderRadius: 16,
-        shadow: 'hard',
-        borderStyle: 'bold',
-        fontFamily: 'sans',
+        shadow: 'deep',
+        borderStyle: 'thin',
+        fontFamily: 'dm-sans',
         tiltAngle: -2.5,
         decoration: 'tape',
         stackDepth: 1,
@@ -261,7 +303,7 @@ export function getPresetByKey(
         borderRadius: 18,
         shadow: 'soft',
         borderStyle: 'thin',
-        fontFamily: 'sans',
+        fontFamily: 'inter',
         tiltAngle: 0,
         decoration: 'none',
         stackDepth: 0
@@ -293,7 +335,7 @@ export function getPresetByKey(
         borderRadius: 14,
         shadow: 'deep',
         borderStyle: 'thin',
-        fontFamily: 'serif',
+        fontFamily: 'lora',
         tiltAngle: 1.5,
         decoration: 'pin',
         stackDepth: 2

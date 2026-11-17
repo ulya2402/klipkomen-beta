@@ -6,21 +6,35 @@ export type CardStyleId =
   | 'youtube'
   | 'social-x'
   | 'ig-story'
+  | 'instagram-comment'
+  | 'whatsapp'
   | 'chat-bubble'
   | 'editorial'
   | 'news-quote'
   | 'podcast-clip'
   | 'brutalist'
   | 'lower-third'
-  | 'frosted';
+  | 'frosted'
+  | 'polaroid-note'
+  | 'retro-window';
+
+export type CardStyleCategory = 'all' | 'social' | 'aesthetic';
 
 export type LayoutModeId = 'stack' | 'thread' | 'zigzag' | 'collage';
 
-export type DecorationId = 'none' | 'tape' | 'pin' | 'gloss';
+export type DecorationId =
+  | 'none'
+  | 'tape'
+  | 'tape-corners'
+  | 'pin'
+  | 'paperclip'
+  | 'sparkle'
+  | 'gloss'
+  | 'stamp';
 
 export type CardThemeId = 'light' | 'dark' | 'warm' | 'glass';
 
-export type FontFamilyId = 'sans' | 'serif' | 'mono';
+export type FontFamilyId = 'sans' | 'inter' | 'dm-sans' | 'serif' | 'lora' | 'mono';
 
 export type BorderStyleId = 'none' | 'thin' | 'bold' | 'dashed';
 
@@ -33,6 +47,8 @@ export type AvatarShapeId = 'circle' | 'squircle' | 'badge';
 export type AttachmentAspectId = 'auto' | 'wide' | 'square';
 
 export type StageBackdropId = 'checker' | 'dark' | 'paper' | 'chroma';
+
+export type ExportBgTextureId = 'solid' | 'dots' | 'grid' | 'paper' | 'gradient' | 'mesh';
 
 export type MobileStageMode = 'normal' | 'tall' | 'compact';
 
@@ -66,6 +82,7 @@ export interface StudioConfig {
   showReplyTag: boolean;
   transparentExport: boolean;
   solidBgColor: string;
+  exportBgTexture: ExportBgTextureId;
   exportScale: number;
   exportPadding: number;
 }

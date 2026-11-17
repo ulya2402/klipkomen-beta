@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type RefObject } from 'react';
+import { useMemo, useRef, useEffect, type CSSProperties, type RefObject } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Download, Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
 import type {
@@ -7,7 +7,7 @@ import type {
   StageBackdropId,
   StudioConfig
 } from '../types';
-import { getEffectiveTilt } from '../utils/surfaceTokens';
+import { getEffectiveTilt, getExportBackgroundStyle } from '../utils/surfaceTokens';
 import { CommentCardPreview } from './CommentCardPreview';
 import { useI18n } from '../hooks/useI18n';
 
@@ -43,6 +43,66 @@ export function StageViewport({
   onExportPng
 }: StageViewportProps) {
   const { t } = useI18n();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const pinchStateRef = useRef<{ initialDist: number; initialZoom: number } | null>(null);
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
+
+  // Non-passive wheel & 2-finger pinch-to-zoom listeners (supports both laptop touchpad & phone touchscreen!)
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = -e.deltaY * 0.0045;
+        onChangeZoom((z) => Math.min(2.0, Math.max(0.4, +(z + delta).toFixed(2))));
+      }
+    };
+
+    const getTouchDist = (t1: Touch, t2: Touch) =>
+      Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        pinchStateRef.current = {
+          initialDist: getTouchDist(e.touches[0], e.touches[1]),
+          initialZoom: zoomRef.current
+        };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchStateRef.current) {
+        e.preventDefault();
+        const dist = getTouchDist(e.touches[0], e.touches[1]);
+        const ratio = dist / Math.max(1, pinchStateRef.current.initialDist);
+        const nextZoom = Math.min(2.0, Math.max(0.4, +(pinchStateRef.current.initialZoom * ratio).toFixed(2)));
+        onChangeZoom(() => nextZoom);
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        pinchStateRef.current = null;
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+      el.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [onChangeZoom]);
 
   const stageBackdropStyle = useMemo<CSSProperties>(() => {
     if (stageBackdrop === 'dark') {
@@ -81,12 +141,23 @@ export function StageViewport({
         };
   }, [stageBackdrop, darkUi]);
 
+  const exportArtboardBgStyle = useMemo(
+    () =>
+      getExportBackgroundStyle(
+        config.transparentExport,
+        config.solidBgColor,
+        config.exportBgTexture || 'solid',
+        config.accentColor
+      ),
+    [config.transparentExport, config.solidBgColor, config.exportBgTexture, config.accentColor]
+  );
+
   const mobileStageHeightClass =
     mobileStageMode === 'tall'
-      ? 'min-h-[320px] max-h-[58dvh]'
+      ? 'min-h-[320px] max-h-[56dvh]'
       : mobileStageMode === 'compact'
-      ? 'min-h-[165px] max-h-[26dvh]'
-      : 'min-h-[245px] max-h-[41dvh]';
+      ? 'min-h-[160px] max-h-[25dvh]'
+      : 'min-h-[240px] max-h-[39dvh]';
 
   const backdropIds: StageBackdropId[] = ['checker', 'dark', 'paper', 'chroma'];
 
@@ -94,7 +165,7 @@ export function StageViewport({
     <section className="order-1 lg:order-2 flex-1 flex flex-col min-w-0 min-h-0 sticky top-12 lg:static z-30 border-b lg:border-b-0 border-slate-200 dark:border-slate-800">
       {/* Stage Control Ribbon */}
       <div className="h-11 px-3 sm:px-5 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#161920]/95 backdrop-blur-sm flex items-center justify-between gap-2 shrink-0">
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
           <span className="hidden md:inline text-xs text-slate-500 dark:text-slate-400 mr-1.5">
             {t('stage.backdropLabel')}
           </span>
@@ -105,7 +176,7 @@ export function StageViewport({
                 key={id}
                 type="button"
                 onClick={() => onChangeBackdrop(id)}
-                className={`h-7 px-2.5 rounded-md text-xs font-medium border transition-all ${
+                className={`h-7 px-2.5 rounded-md text-xs font-medium border shrink-0 transition-all ${
                   active
                     ? 'bg-[#111318] text-white border-[#111318] dark:bg-white dark:text-[#111318] dark:border-white'
                     : 'bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400'
@@ -121,7 +192,7 @@ export function StageViewport({
           <button
             type="button"
             onClick={onCycleMobileMode}
-            className="lg:hidden h-7 px-2.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium flex items-center gap-1"
+            className="lg:hidden h-7 px-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-medium flex items-center gap-1"
           >
             {mobileStageMode === 'tall' ? (
               <Minimize2 className="w-3 h-3" />
@@ -131,11 +202,11 @@ export function StageViewport({
             <span>{t(`stage.mobileMode.${mobileStageMode}`)}</span>
           </button>
 
-          <div className="hidden sm:flex items-center h-7 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-1">
+          <div className="flex items-center h-7 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-1">
             <button
               type="button"
-              onClick={() => onChangeZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))}
-              className="w-6 h-5 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              onClick={() => onChangeZoom((z) => Math.max(0.4, +(z - 0.1).toFixed(2)))}
+              className="w-5 sm:w-6 h-5 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white"
               title={t('stage.zoomOut')}
             >
               <ZoomOut className="w-3.5 h-3.5" />
@@ -143,15 +214,15 @@ export function StageViewport({
             <button
               type="button"
               onClick={onResetZoom}
-              className="px-1.5 text-xs font-medium tabular-nums hover:text-blue-600"
+              className="px-1 sm:px-1.5 text-[11px] sm:text-xs font-medium tabular-nums hover:text-blue-600"
               title={t('stage.zoomReset')}
             >
               {Math.round(zoom * 100)}%
             </button>
             <button
               type="button"
-              onClick={() => onChangeZoom((z) => Math.min(1.6, +(z + 0.1).toFixed(2)))}
-              className="w-6 h-5 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              onClick={() => onChangeZoom((z) => Math.min(2.0, +(z + 0.1).toFixed(2)))}
+              className="w-5 sm:w-6 h-5 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white"
               title={t('stage.zoomIn')}
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -163,33 +234,35 @@ export function StageViewport({
       {/* Interactive Canvas Stage Wrapper */}
       <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
         <div
-          onWheel={(e) => {
-            if (e.ctrlKey || e.metaKey) {
-              e.preventDefault();
-              onChangeZoom((z) =>
-                Math.min(1.6, Math.max(0.5, +(z + (e.deltaY < 0 ? 0.08 : -0.08)).toFixed(2)))
-              );
-            }
-          }}
-          style={stageBackdropStyle}
+          ref={scrollContainerRef}
+          style={{ ...stageBackdropStyle, touchAction: 'pan-x pan-y' }}
           className={`flex-1 ${mobileStageHeightClass} lg:min-h-0 lg:max-h-none overflow-auto overscroll-contain transition-all duration-200`}
         >
           <div className="min-h-full min-w-full flex p-6 sm:p-10 lg:p-14 lg:pb-20">
             <div className="m-auto">
-              <motion.div
-                animate={{ scale: zoom }}
-                transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-                className="inline-block origin-center"
+              <div
+                style={{
+                  transform: `scale(${zoom})`,
+                  transformOrigin: 'center center',
+                  transition: pinchStateRef.current ? 'none' : 'transform 120ms ease-out'
+                }}
+                className="inline-block"
               >
                 <div
                   ref={captureTargetRef}
                   style={{
-                    padding: `${config.exportPadding}px`,
-                    backgroundColor: config.transparentExport
-                      ? 'transparent'
-                      : config.solidBgColor
+                    padding: `${Math.max(
+                      config.exportPadding,
+                      Math.round(
+                        Math.abs(config.tiltAngle || 0) * 3.2 +
+                          (config.decoration !== 'none' ? 18 : 0) +
+                          (config.stackDepth || 0) * 6 +
+                          (config.shadow === 'deep' || config.shadow === 'glow' ? 16 : 0)
+                      )
+                    )}px`,
+                    ...exportArtboardBgStyle
                   }}
-                  className="inline-block transition-colors duration-200"
+                  className="inline-block transition-colors duration-200 rounded-xs"
                 >
                   <div
                     className="flex flex-col"
@@ -246,7 +319,7 @@ export function StageViewport({
                     </AnimatePresence>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>

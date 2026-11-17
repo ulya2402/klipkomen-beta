@@ -30,7 +30,7 @@
     "zoomReset": "Reset Zoom 100%",
     "zoomIn": "Perbesar",
     "alphaPng": "Alpha PNG Transparan",
-    "solidPng": "PNG Latar Solid",
+    "solidPng": "PNG Latar & Tekstur",
     "cardCount": "{count} Kartu",
     "copyPng": "Salin PNG",
     "savePng": "Simpan PNG"
@@ -90,29 +90,37 @@
     "justNow": "Baru saja"
   },
   "editor": {
-    "boldTitle": "Tebal (**teks**)",
-    "italicTitle": "Miring (*teks*)",
-    "underlineTitle": "Garis Bawah (__teks__)",
-    "highlightTitle": "Sorotan Warna (==teks==)",
-    "mentionHint": "@mention & #tag otomatis berwarna",
-    "placeholder": "Tulis komentar...",
-    "sampleWord": "teks"
+    "boldTitle": "Tebal (Ctrl+B)",
+    "italicTitle": "Miring (Ctrl+I)",
+    "underlineTitle": "Garis Bawah (Ctrl+U)",
+    "highlightTitle": "Sorotan Warna",
+    "mentionHint": "WYSIWYG • @ & # otomatis",
+    "placeholder": "Tulis komentar di sini..."
   },
   "style": {
-    "cardStylesTitle": "Gaya Desain Kartu (12)",
+    "cardStylesTitle": "Gaya Desain Kartu",
+    "categories": {
+      "all": "Semua",
+      "social": "Sosial Media",
+      "aesthetic": "Aesthetic"
+    },
     "cardStyles": {
-      "tiktok": { "name": "TikTok Reply", "desc": "Stiker balasan kreator ikonik" },
-      "threads": { "name": "Instagram / Threads", "desc": "Utas bersih dengan garis alur" },
+      "tiktok": { "name": "TikTok Reply", "desc": "Stiker balasan kreator autentik" },
+      "threads": { "name": "Threads", "desc": "Utas Meta lengkap ikon aksi" },
       "youtube": { "name": "YouTube Pinned", "desc": "Komentar tersemat + hati kreator" },
-      "social-x": { "name": "X / Post Sosial", "desc": "Kartu mikroblog tajam & ringkas" },
-      "ig-story": { "name": "IG Story Q&A", "desc": "Stiker tanya jawab ber-header aksen" },
-      "chat-bubble": { "name": "Gelembung Chat", "desc": "Balon percakapan ekor dinamis" },
-      "editorial": { "name": "Kartu Editorial", "desc": "Tipografi serif untuk thumbnail" },
+      "social-x": { "name": "X (Twitter)", "desc": "Postingan X autentik & metrik" },
+      "ig-story": { "name": "IG Story Q&A", "desc": "Stiker tanya jawab Instagram" },
+      "instagram-comment": { "name": "IG Komentar", "desc": "Komentar Instagram + ikon hati" },
+      "whatsapp": { "name": "WhatsApp Chat", "desc": "Balon chat WA + centang biru" },
+      "chat-bubble": { "name": "Gelembung Chat", "desc": "Balon percakapan modern" },
+      "editorial": { "name": "Kartu Editorial", "desc": "Tipografi serif untuk kutipan" },
       "news-quote": { "name": "Sorotan Artikel", "desc": "Garis aksen vertikal di sisi kiri" },
       "podcast-clip": { "name": "Klip Podcast", "desc": "Kutipan audio gelombang suara" },
       "brutalist": { "name": "Stiker Pop Zine", "desc": "Garis tepi tegas & bayangan solid" },
       "lower-third": { "name": "Kapsul Video", "desc": "Kartu ringkas overlay Reels" },
-      "frosted": { "name": "Kaca Overlay", "desc": "Kaca buram adaptif terang/gelap" }
+      "frosted": { "name": "Kaca Overlay", "desc": "Kaca buram adaptif terang/gelap" },
+      "polaroid-note": { "name": "Polaroid Note", "desc": "Bingkai catatan estetis ala foto" },
+      "retro-window": { "name": "Retro OS Window", "desc": "Jendela klasik minimalis Y2K" }
     },
     "aestheticTitle": "Efek Aesthetic & Kemiringan",
     "randomTilt": "Acak Miring",
@@ -120,9 +128,13 @@
     "decorationLabel": "Aksen Dekorasi Stiker",
     "decorations": {
       "none": "Polos",
-      "tape": "Selotip Washi",
+      "tape": "Selotip Atas",
+      "tape-corners": "Selotip Sudut",
       "pin": "Pin Jepit",
-      "gloss": "Kilau Sudut"
+      "paperclip": "Klip Kertas",
+      "sparkle": "Kilau Bintang",
+      "gloss": "Kilau Kaca",
+      "stamp": "Stempel"
     },
     "stackDepthLabel": "Lapisan Tumpukan Belakang",
     "stackSingle": "Tunggal",
@@ -160,9 +172,12 @@
     "shapeSquircle": "Squircle Membulat",
     "shapeBadge": "Kotak Stiker",
     "fontFamily": "Jenis Font",
-    "fontSans": "Modern Sans",
-    "fontSerif": "Editorial Serif",
-    "fontMono": "Teknis Mono",
+    "fontSans": "Jakarta Sans (Modern)",
+    "fontInter": "Inter (Netral & Rapi)",
+    "fontDmSans": "DM Sans (Lembut)",
+    "fontSerif": "Fraunces (Editorial)",
+    "fontLora": "Lora (Klasik Halus)",
+    "fontMono": "JetBrains Mono",
     "borderStyle": "Garis Tepi (Border)",
     "borderNone": "Tanpa Garis",
     "borderThin": "Tipis Halus (1px)",
@@ -189,7 +204,16 @@
   "export": {
     "alphaTitle": "Transparansi Alpha PNG",
     "alphaDesc": "Hapus latar belakang otomatis sehingga kartu komentar siap ditempel di CapCut, Premiere, Canva, atau Figma tanpa kotak putih.",
-    "solidBgColor": "Warna Latar Solid",
+    "solidBgColor": "Warna Dasar Latar",
+    "textureLabel": "Tekstur Latar Belakang",
+    "textures": {
+      "solid": "Polos Solid",
+      "dots": "Titik Minimalis",
+      "grid": "Kotak Kertas",
+      "paper": "Serat Kertas",
+      "gradient": "Gradasi Halus",
+      "mesh": "Aurora Mesh"
+    },
     "resolutionTitle": "Resolusi & Margin Ekspor",
     "scale1x": "1x Standar",
     "scale2x": "2x Retina",
@@ -199,21 +223,22 @@
     "paddingBalanced": "Seimbang (28px — Direkomendasikan)",
     "paddingSpacious": "Lega (48px)",
     "estimatedDim": "Estimasi Dimensi Output",
-    "downloadTransparent": "Unduh File PNG Transparan",
+    "downloadTransparent": "Unduh File PNG",
     "copyClipboard": "Salin PNG ke Clipboard (Paste di Figma/Canva)",
     "resetAll": "Atur Ulang Semua ke Awal"
   },
   "preview": {
     "replyAction": "Balas",
     "likesSuffix": "Suka",
-    "pinnedByCreator": "Disematkan oleh Kreator",
-    "creatorHeart": "♥ Kreator",
+    "pinnedByCreator": "Disematkan oleh {name}",
+    "creatorHeart": "♥",
     "askMeAnything": "Tanyakan sesuatu padaku",
     "replyingToHandle": "Membalas komentar @{handle}",
     "replyingToName": "Balas komentar {name}",
     "brutalistTag": "KOMEN",
     "podcastTag": "AUDIO",
-    "attachmentAlt": "Lampiran komentar"
+    "attachmentAlt": "Lampiran komentar",
+    "stampText": "CATATAN"
   },
   "modals": {
     "pasteTitle": "Tempel Percakapan Sekaligus",
@@ -245,9 +270,9 @@
     "canvasReset": "Kanvas diatur ulang ke awal",
     "sampleAdded": "Contoh gambar ditambahkan",
     "renderingPng": "Merender PNG resolusi tinggi...",
-    "copiedPng": "PNG transparan disalin! Siap Ctrl+V di Figma / Canva",
+    "copiedPng": "PNG disalin! Siap Ctrl+V di Figma / Canva",
     "clipboardFallback": "Clipboard dibatasi browser, file PNG otomatis diunduh",
-    "downloadedPng": "File PNG transparan berhasil diunduh!",
+    "downloadedPng": "File PNG berhasil diunduh!",
     "exportFailed": "Gagal memproses PNG. Coba perkecil ukuran lampiran."
   }
 }
